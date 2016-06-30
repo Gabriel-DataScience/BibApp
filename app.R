@@ -9,9 +9,10 @@ library(shinydashboard)
 library(stringr)
 library(ggplot2)
 library(plotly)
+library(plyr)
 
-source("00-ui-elements.R")
-source("00-sv-elements.R")
+source("00-ui-elements.R", encoding = "UTF-8")
+source("00-sv-elements.R", encoding = "UTF-8")
 
 ui <-
   dashboardPage( skin = "green",
@@ -197,19 +198,19 @@ server <- function(input, output, session){
     BASE <- ggplot(na.omit(dados), aes(x = X, y = Frequencia, fill = X ))
     BASEpie <- ggplot(na.omit(dados), aes(x = "", y = Frequencia, fill = X ))
     Colunas <- BASE + geom_bar(stat = "identity", colour = "lightgreen")
-    Pizza <- BASEpie + geom_bar(width = 1,stat = "identity") + coord_polar(theta = "y", start = 0)
-    
-    
+#    Pizza <- BASEpie + geom_bar(width = 1,stat = "identity") + coord_polar(theta = "y", start = 0)
+    Pizza <- plot_ly(dados, labels = X, values = Frequencia, type = "pie") %>%
+      layout(title = input$text_titulo)
     
     
     if(input$tipo == "Colunas") result <- Colunas + Titulo + Eixo_x + Eixo_y + 
       Config + scale_x_discrete( breaks = c("") )
-    if(input$tipo == "Pizza") result <- Pizza + Titulo + Eixo_x + Eixo_y + Config 
+    if(input$tipo == "Pizza") result <- Pizza
     if(input$tipo == "Barras") result <- Colunas + coord_flip() + xlab("") + Eixo_y +
       guides(fill=FALSE) + Config + 
       scale_x_discrete( breaks = c("") ) + Titulo
     
-    ggplotly(result)
+    if(input$tipo == "Pizza") result else ggplotly(result)
 
   })
   
@@ -223,7 +224,7 @@ server <- function(input, output, session){
     
     Titulo <-  ggtitle(input$text_titulo2)
     Eixo_x <- xlab(input$text_eixo2)
-    Eixo_y <- ylab("Frequência")
+    Eixo_y <- ylab("Frequência absoluta")
     
     Config <- theme(
       plot.title = element_text(color="darkgreen", size=14, face="bold"),
@@ -234,7 +235,9 @@ server <- function(input, output, session){
     )
     
     colnames(dados_aux) <- c("X","Y")
-    BASE <- ggplot(na.omit(dados_aux), aes( x = X, fill = Y))
+    dados_aux <- na.omit(dados_aux)
+    
+    BASE <- ggplot(dados_aux, aes( x = X, fill = Y))
     
     Colunas <- BASE + geom_bar( position = "fill", colour = "lightgreen") 
     Colunas2 <- BASE + geom_bar( position = "stack", colour = "lightgreen") 
@@ -244,8 +247,22 @@ server <- function(input, output, session){
       Eixo_x  + ylab("Frequência relativa")
     if(input$tipo2 == "Colunas2")  result <- Colunas2 + Config + Titulo + Eixo_x + Eixo_y
     if(input$tipo2 == "Colunas3")  result <- Colunas3 + Config + Titulo + Eixo_x + Eixo_y
-    if(input$tipo2 == "Barras") result <- Colunas + coord_flip() + xlab("") + Eixo_y +
-      Config
+    if(input$tipo2 == "Barras") result <- Colunas + coord_flip() + xlab("") +
+      ylab("Frequência relativa") + Config
+    if(input$tipo2 == "Barras2") result <- Colunas2 + coord_flip() + xlab("") +
+      Eixo_y + Config
+    if(input$tipo2 == "Barras3") result <- Colunas3 + coord_flip() + xlab("") +
+      Eixo_y + Config
+    
+    if(input$tipo2 == "Linhas"){
+      
+      aux <- count(dados_aux, vars = c("X","Y"))
+      
+      result <- ggplot(data = aux, aes( x = X, y = freq ,group = Y, colour = Y)) + geom_line() +
+        geom_point() + Config + Titulo + Eixo_x + Eixo_y
+      
+    }
+    
     
     ggplotly(result)
     

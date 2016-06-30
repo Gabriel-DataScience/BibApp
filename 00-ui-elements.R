@@ -9,7 +9,7 @@ CarregarDados <-   fileInput("arquivoescolhido", label = "Escolha o seu arquivo 
   ))
 
 Header <- checkboxInput(inputId = "header", "Header", TRUE)
-Linha <- checkboxInput(inputId = "linha", "Linha", FALSE)
+Linha <- checkboxInput(inputId = "linha", "Linha", TRUE)
 
 Separador <- 
   radioButtons("sep", "Separador",
@@ -27,7 +27,7 @@ TipoGrafico <-
 
 TipoGrafico2 <-
   selectInput(inputId = "tipo2", label = "Tipo de gráfico:",
-              choices = c("Colunas","Colunas2","Colunas3","Barras"))
+              choices = c("Colunas","Colunas2","Colunas3","Barras", "Barras2", "Barras3", "Linhas"))
 
 inserirTitulo <-
   textInput("text_titulo", label = "Título", value = "Digite o título do gráfico")

@@ -7,10 +7,10 @@ dados <- function(input){
       inFile <- input$arquivoescolhido
       
       ifelse(input$linha, 
-        dados <- read.csv(inFile$datapath, header = FALSE,
-                          sep = input$sep, dec = input$dec, row.names = 1 ),
-        dados <- read.csv(inFile$datapath, header = FALSE,
-                          sep = input$sep, dec = input$dec )
+        dados <- read.csv(inFile$datapath, header = FALSE, sep = input$sep,
+                          dec = input$dec, row.names = 1, encoding = "UTF-8" ),
+        dados <- read.csv(inFile$datapath, header = FALSE,sep = input$sep,
+                          dec = input$dec, encoding = "UTF-8" )
       )
       
       if(input$header == TRUE){
@@ -50,7 +50,7 @@ Gerar_matriz_binaria <- function(x) {
     x <- na.exclude(x)
   })
   separacao <- lapply(separacao, function(x) str_trim(x, side = "left"))    # tira todos os espaços do início do vetor
-  separacao <- lapply(separacao, function(x){if(nchar(gsub(" ","",x))==0) x<-NA else x<-x})   # transforma em NA os campos vazios
+  separacao <- lapply(separacao, function(x){if( all(nchar(gsub(" ","",x)) == 0) ) x<-NA else x<-x})   # transforma em NA os campos vazios
   
   
   nlevel <- length(levels(as.factor(unlist(separacao))))    # número de itens
@@ -60,7 +60,7 @@ Gerar_matriz_binaria <- function(x) {
   if( sum(unlist(lapply(separacao, length))) > length(x) ) multitem <- 1 else multitem <- 0
   
   if(multitem == 0){  # caso não seja multitem ele retorna os próprios dados
-    matriz <- as.data.frame(unlist(separacao)[])
+    matriz <- as.data.frame(unlist(separacao))
 #    colnames(matriz) <- dimnames(dados)[[2]][j]
   }else{    # caso seja multitem ele retorna a matriz de 0 e 1
     matriz <- sim_ou_nao(separacao, nameslevels[1])
@@ -68,11 +68,11 @@ Gerar_matriz_binaria <- function(x) {
       matriz <- cbind(matriz, sim_ou_nao(separacao, nameslevels[i]))
     }
     #    colnames(matriz) <- paste0("V", j, ": ", nameslevels)
-   # colnames(matriz) <- paste0(nameslevels)
+    colnames(matriz) <- paste0(nameslevels)
   }
   
   # retorna a matriz com os dados e as variáveis que são multitem
-  return(list( Matriz = matriz, Multitem = multitem, N = nlevel))
+  return(list( Matriz = matriz, Multitem = multitem, levels = nameslevels))
 }
 
 #------------------------------------------------------------------------------#
@@ -202,4 +202,24 @@ Gerar_freq <- function(dados) {
 }
 
 #------------------------------------------------------------------------------#
+
+#------------------------------------------------------------------------------#
+
+mults <- function(dados){
+  f <- function(x){
+    separacao <- strsplit(as.character(x), ",")     #separa as respostas de cada um pela vírgula, gera uma lista p/ cada respondente
+    separacao <- lapply(separacao, function(x) {    # Faz uma correção em uma questão específica que continha um item com ","
+      x[which(x == "Treinamentos de usuários (normalização" | 
+                x == " Treinamentos de usuários (normalização")] <- c("Treinamentos de usuários (normalização, bases de dados etc.)")
+      x[which(x == "bases de dados etc.)" | x == " bases de dados etc.)")] <- NA
+      x <- na.exclude(x)
+    })
+    
+    # verificar se é uma questão multitem, 1 se sim e 0 se não
+    if( sum(unlist(lapply(separacao, length))) > length(x) ) multitem <- 1 else multitem <- 0
+    return(multitem)
+  }
+  questmult <- apply(dados, 2, f)
+  return(questmult)
+}
 
