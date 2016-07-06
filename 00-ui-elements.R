@@ -73,3 +73,4 @@ UIvargrafico2_2 <- function(nomes)
               'Selecione a variável do eixo y:', 
               choices = nomes,
               selected = nomes[1])
+

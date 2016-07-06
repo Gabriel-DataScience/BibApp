@@ -1,16 +1,7 @@
 #--------------------------- Gráficos iterativos -----------------------------#
 #------------------------- Sistema Biblioteca UFC ----------------------------#
-#--------------------------- Gabriel Fernandes -------------------------------#
-require(shiny)
-require(markdown)
-require(datasets)
-require(fBasics)
-library(shinydashboard)
-library(stringr)
-library(ggplot2)
-library(plotly)
-library(plyr)
 
+source("00-pack.R", encoding = "UTF-8")
 source("00-ui-elements.R", encoding = "UTF-8")
 source("00-sv-elements.R", encoding = "UTF-8")
 
@@ -85,7 +76,9 @@ ui <-
                              width = NULL,
                              TipoGrafico2,
                              uiOutput("vargrafico2_1"),
-                             uiOutput("vargrafico2_2")
+                             uiOutput("mults"),
+                             uiOutput("vargrafico2_2"),
+                             uiOutput("mults2")
                          ),
                          box(title = "Formatação", solidHeader = TRUE, status = "success",
                              width = NULL,
@@ -126,6 +119,43 @@ server <- function(input, output, session){
     
     UIvartabela(nomes)
   })
+  
+  output$mults <- renderUI({
+    dados <- dados(input)$dados
+    nomes <- names(mults(dados))
+    
+    if( any(nomes == input$var_grafico2_1) ){
+      
+      nomes2 <- nomes[which(nomes == input$var_grafico2_1)]
+      nomesitens <- itensmults(dados[,which(names(dados) == nomes2)])
+      
+      selectInput('var_mults',
+                  'Selecione o item:',
+                  choices = nomesitens,
+                  selected = nomesitens[1]
+      )
+    }
+
+  })
+
+  output$mults2 <- renderUI({
+    dados <- dados(input)$dados
+    nomes <- names(mults(dados))
+    
+    if( any(nomes == input$var_grafico2_2) ){
+      
+      nomes2 <- nomes[which(nomes == input$var_grafico2_2)]
+      nomesitens <- itensmults(dados[,which(names(dados) == nomes2)])
+      selectInput('var_mults2',
+                  'Selecione o item:',
+                  choices = nomesitens,
+                  selected = nomesitens[1]
+      )
+    }
+    
+  })
+  
+    
   #------------------------------------------------------------------------------#
   #------------------------------------------------------------------------------# 
   # função para a seleção da variavel para a tabela
@@ -215,8 +245,11 @@ server <- function(input, output, session){
   })
   
 
-  output$grafico2 <- renderPlotly({ 
+  output$grafico2 <- renderPlotly({
     dados <- dados(input)$dados
+    nomes <- names(mults(dados))
+    
+#    if(any(nomes == input$var_grafico2_1))
     
     dadosx <- Gerar_matriz_binaria(dados[,which(colnames(dados)==input$var_grafico2_1)])$Matriz
     dadosy <- Gerar_matriz_binaria(dados[,which(colnames(dados)==input$var_grafico2_2)])$Matriz

@@ -204,7 +204,7 @@ Gerar_freq <- function(dados) {
 #------------------------------------------------------------------------------#
 
 #------------------------------------------------------------------------------#
-
+# função para saber as questões multiitem
 mults <- function(dados){
   f <- function(x){
     separacao <- strsplit(as.character(x), ",")     #separa as respostas de cada um pela vírgula, gera uma lista p/ cada respondente
@@ -220,6 +220,18 @@ mults <- function(dados){
     return(multitem)
   }
   questmult <- apply(dados, 2, f)
-  return(questmult)
+  if( length( which( questmult == 1 ) ) == 0) return(0) 
+  else
+  return( which(questmult == 1) )
 }
 
+itensmults <- function(x){
+  separacao <- strsplit(as.character(x), ",")     #separa as respostas de cada um pela vírgula, gera uma lista p/ cada respondente
+  separacao <- lapply(separacao, function(x) {    # Faz uma correção em uma questão específica que continha um item com ","
+    x[which(x == "Treinamentos de usuários (normalização" | 
+              x == " Treinamentos de usuários (normalização")] <- c("Treinamentos de usuários (normalização, bases de dados etc.)")
+    x[which(x == "bases de dados etc.)" | x == " bases de dados etc.)")] <- NA
+    x <- na.exclude(x)
+  })
+  return( names( table( unlist(separacao) ) ) )
+}
