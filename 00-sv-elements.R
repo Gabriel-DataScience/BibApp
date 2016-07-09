@@ -233,5 +233,7 @@ itensmults <- function(x){
     x[which(x == "bases de dados etc.)" | x == " bases de dados etc.)")] <- NA
     x <- na.exclude(x)
   })
+  separacao <- lapply(separacao, function(x) str_trim(x, side = "left"))    # tira todos os espaços do início do vetor
+  
   return( names( table( unlist(separacao) ) ) )
 }

@@ -196,7 +196,7 @@ server <- function(input, output, session){
     
 #      n <- which(colnames(dados$dados) ==  input$var_tabela)
     Resultado <- Gerar_freq(dados$dados)
-    Resultado[[input$var_tabela]]
+    Resultado[[req(input$var_tabela)]]
 
   })
   #------------------------------------------------------------------------------#
@@ -207,7 +207,7 @@ server <- function(input, output, session){
   output$grafico <- renderPlotly({
     dados0 <- dados(input)
     dados <- Gerar_freq(dados0$dados)
-    dados <- dados[[input$var_grafico]]
+    dados <- dados[[ req(input$var_grafico) ]]
     dados <- dados[-nrow(dados),]
     
     X <- dados[,1]
@@ -249,12 +249,6 @@ server <- function(input, output, session){
     dados <- dados(input)$dados
     nomes <- names(mults(dados))
     
-#    if(any(nomes == input$var_grafico2_1))
-    
-    dadosx <- Gerar_matriz_binaria(dados[,which(colnames(dados)==input$var_grafico2_1)])$Matriz
-    dadosy <- Gerar_matriz_binaria(dados[,which(colnames(dados)==input$var_grafico2_2)])$Matriz
-    dados_aux <- cbind(dadosx,dadosy)
-    
     Titulo <-  ggtitle(input$text_titulo2)
     Eixo_x <- xlab(input$text_eixo2)
     Eixo_y <- ylab("Frequência absoluta")
@@ -267,37 +261,91 @@ server <- function(input, output, session){
       axis.text.x = element_text(face = "bold.italic", color = "darkgreen", size = 10)
     )
     
-    colnames(dados_aux) <- c("X","Y")
-    dados_aux <- na.omit(dados_aux)
-    
-    BASE <- ggplot(dados_aux, aes( x = X, fill = Y))
-    
-    Colunas <- BASE + geom_bar( position = "fill", colour = "lightgreen") 
-    Colunas2 <- BASE + geom_bar( position = "stack", colour = "lightgreen") 
-    Colunas3 <- BASE + geom_bar( position = "dodge", colour = "lightgreen")      
-    
-    if(input$tipo2 == "Colunas")  result <- Colunas + Config + Titulo +
-      Eixo_x  + ylab("Frequência relativa")
-    if(input$tipo2 == "Colunas2")  result <- Colunas2 + Config + Titulo + Eixo_x + Eixo_y
-    if(input$tipo2 == "Colunas3")  result <- Colunas3 + Config + Titulo + Eixo_x + Eixo_y
-    if(input$tipo2 == "Barras") result <- Colunas + coord_flip() + xlab("") +
-      ylab("Frequência relativa") + Config
-    if(input$tipo2 == "Barras2") result <- Colunas2 + coord_flip() + xlab("") +
-      Eixo_y + Config
-    if(input$tipo2 == "Barras3") result <- Colunas3 + coord_flip() + xlab("") +
-      Eixo_y + Config
-    
-    if(input$tipo2 == "Linhas"){
+    if( any( nomes == input$var_grafico2_1 | nomes == input$var_grafico2_2) ){
       
-      aux <- count(dados_aux, vars = c("X","Y"))
+      aux1 <- 0; aux2 <- 0; aux3 <- 0
       
-      result <- ggplot(data = aux, aes( x = X, y = freq ,group = Y, colour = Y)) + geom_line() +
-        geom_point() + Config + Titulo + Eixo_x + Eixo_y
+      if( any( nomes == input$var_grafico2_1) ){
+        a <- req(input$var_mults)
+        aux <- as.data.frame(Gerar_matriz_binaria( dados[[ input$var_grafico2_1 ]] )$Matriz)
+        dadosx <- aux[a][,1]
+        aux1 <- 1
+      } else dadosx <- Gerar_matriz_binaria( dados[[input$var_grafico2_1]] )$Matriz
       
+      if( any( nomes == input$var_grafico2_2) ){
+        req(input$var_mults2)
+        aux <- as.data.frame(Gerar_matriz_binaria( dados[[ input$var_grafico2_2 ]] )$Matriz)
+        dadosy <- aux[input$var_mults2][,1]
+        aux2 <- 1
+      } else dadosy <- Gerar_matriz_binaria( dados[[input$var_grafico2_2]] )$Matriz
+      
+      if( aux1 == 1 & aux2 == 1) aux3 <- 1
+      
+      dados_aux <- data.frame(X = dadosx, Y = dadosy)
+      dados_aux <- na.omit(dados_aux)
+      
+      if(aux1 == 1) dados_aux <- subset(dados_aux, X == 1)
+      if(aux2 == 1) dados_aux <- subset(dados_aux, Y == 1)
+      
+      if(aux3 == 1){
+        tab_freq <- count(dados_aux)
+        tab_freq[,1] <- "Frequência"
+        aux4 <- 1
+      }else{
+        aux4 <- which(c(aux1,aux2) == 0)
+        tab_freq <- count(dados_aux)
+      }
+      
+      Pizza <- plot_ly( tab_freq, labels = tab_freq[,aux4], values = freq, type = "pie") %>%
+        layout(title = input$text_titulo2)
+      
+      Pizza
+      
+    }else{
+
+      # dadosx <- Gerar_matriz_binaria( 
+      #   dados[, which( colnames(dados) == req(input$var_grafico2_1) ) ] )$Matriz
+      # dadosy <- Gerar_matriz_binaria( 
+      #   dados[, which( colnames(dados) == req(input$var_grafico2_2) ) ] )$Matriz
+      dadosx <- Gerar_matriz_binaria( dados[[req(input$var_grafico2_1)]] )$Matriz
+      dadosy <- Gerar_matriz_binaria( dados[[req(input$var_grafico2_2)]] )$Matriz
+      
+      dados_aux <- data.frame(X = dadosx, Y = dadosy)
+      
+      colnames(dados_aux) <- c("X","Y")
+      dados_aux <- na.omit(dados_aux)
+      
+      BASE <- ggplot(dados_aux, aes( x = X, fill = Y))
+      
+      Colunas <- BASE + geom_bar( position = "fill", colour = "lightgreen") 
+      Colunas2 <- BASE + geom_bar( position = "stack", colour = "lightgreen") 
+      Colunas3 <- BASE + geom_bar( position = "dodge", colour = "lightgreen")      
+      
+      if(input$tipo2 == "Colunas")  result <- Colunas + Config + Titulo +
+        Eixo_x  + ylab("Frequência relativa")
+      if(input$tipo2 == "Colunas2")  result <- Colunas2 + Config + Titulo + Eixo_x + Eixo_y
+      if(input$tipo2 == "Colunas3")  result <- Colunas3 + Config + Titulo + Eixo_x + Eixo_y
+      if(input$tipo2 == "Barras") result <- Colunas + coord_flip() + xlab("") +
+        ylab("Frequência relativa") + Config
+      if(input$tipo2 == "Barras2") result <- Colunas2 + coord_flip() + xlab("") +
+        Eixo_y + Config
+      if(input$tipo2 == "Barras3") result <- Colunas3 + coord_flip() + xlab("") +
+        Eixo_y + Config
+      
+      if(input$tipo2 == "Linhas"){
+        
+        aux <- count(dados_aux, vars = c("X","Y"))
+        
+        result <- ggplot(data = aux, aes( x = X, y = freq ,group = Y, colour = Y)) + geom_line() +
+          geom_point() + Config + Titulo + Eixo_x + Eixo_y
+        
+      }
+      
+      
+      ggplotly(result)  
     }
     
     
-    ggplotly(result)
     
   })
   
