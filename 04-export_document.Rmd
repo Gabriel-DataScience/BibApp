@@ -1,0 +1,40 @@
+---
+title: "Sistema de Biblioteca - UFC"
+author: "Gabriel Fernandes Gomes"
+header-includes:
+ - \usepackage{caption}
+ - \usepackage[brazil]{babel}
+output: pdf_document
+---
+
+
+```{r , echo = FALSE, message = FALSE, warning=FALSE}
+
+##################################################################################################
+
+# endereco <- file.choose()
+# dados <- read.csv("Edvandercommultiplasrespostas2.csv", header = FALSE, 
+#                   row.names = 1, sep = ";", dec = ".",
+#                   encoding = "UTF-8")  # ler o arquivo
+dados <- dados(input)$dados
+# Questões abertas:
+# 17, 27, 35, 40, 46, 52, 62, 65.
+dados <- dados[, -c( 18, 28, 36, 41, 47, 53, 63, 66)]
+
+# # nome das colunas
+# for(i in 1: ncol(dados)){
+#   colnames(dados)[i] <- as.character(dados[1,i])
+# }
+# dados <- dados[-1,]
+
+Resultado <- Gerar_freq(dados)
+
+```
+
+
+```{r results="asis", echo=FALSE, message=FALSE, warning=FALSE}
+Nome_var <- names(Resultado)
+for(i in 1:length(Nome_var))
+print(kable(Resultado[[i]], caption = paste( Nome_var[i]), row.names = FALSE ))
+```
+
