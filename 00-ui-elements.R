@@ -23,23 +23,36 @@ Decimal <-
 
 TipoGrafico <-
   selectInput(inputId = "tipo", label = "Tipo de gráfico:",
-              choices = c("Colunas","Barras", "Pizza"))
+              choices = c("Colunas","Barras", "Setores"),
+              selected = "Setores")
 
-TipoGrafico2 <-
-  selectInput(inputId = "tipo2", label = "Tipo de gráfico:",
-              choices = c("Colunas","Colunas2","Colunas3","Barras", "Barras2", "Barras3", "Linhas"))
+# TipoGrafico2 <-
+#   selectInput(inputId = "tipo2", label = "Tipo de gráfico:",
+#               choices = c("Colunas Superpostas Prop.","Colunas Superpostas","Colunas Sobrepostas",
+#                           "Barras Superpostas Prop.", "Barras Superpostas", "Barras Sobrepostas",
+#                           "Linhas"))
 
 inserirTitulo <-
-  textInput("text_titulo", label = "Título", value = "Digite o título do gráfico")
+  textInput("text_titulo", label = "Título", placeholder = "Digite o título do gráfico")
 
 inserirEixo <-
-  textInput("text_eixo", label = "Eixo x", value = "Digite o titulo do eixo x")
+  textInput("text_eixo", label = "Eixo x", placeholder = "Digite o titulo do eixo x")
 
 inserirTitulo2 <-
-  textInput("text_titulo2", label = "Título", value = "Digite o título do gráfico")
+  textInput("text_titulo2", label = "Título", placeholder = "Digite o título do gráfico")
 
 inserirEixo2 <-
-  textInput("text_eixo2", label = "Eixo x", value = "Digite o titulo do eixo x")
+  textInput("text_eixo2", label = "Eixo x", placeholder = "Digite o titulo do eixo x")
+
+DownloadTabela <-
+  downloadButton('downloadData', 'Download arquivo .csv')
+
+DownloadAll <- 
+  downloadButton("downloadAll","Download de todas as tabelas!")
+
+format_arquivo_all <- 
+radioButtons('format', 'Formato do documento', c('PDF', 'HTML', 'Word'),
+             inline = TRUE)
 
 #-----------------------------------------------------------------------------#
 #----------------- UI funções

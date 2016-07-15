@@ -42,7 +42,10 @@ ui <-
         tabItem(tabName = "Tabela",
                 sidebarLayout(
                   box( title = "Variável", solidHeader = TRUE, status = "success",
-                       uiOutput("vartabela")
+                       uiOutput("vartabela"),
+                       DownloadTabela,
+                       DownloadAll,
+                       format_arquivo_all
                   ),
                   mainPanel(dataTableOutput("Tabela"))
                   
@@ -74,7 +77,7 @@ ui <-
                   column(width=4,
                          box(title = "Escolha do Gráfico", solidHeader = TRUE, status = "success",
                              width = NULL,
-                             TipoGrafico2,
+                             uiOutput("TipoGrafico2"),
                              uiOutput("vargrafico2_1"),
                              uiOutput("mults"),
                              uiOutput("vargrafico2_2"),
@@ -120,6 +123,7 @@ server <- function(input, output, session){
     UIvartabela(nomes)
   })
   
+  # função para a seleção do item da questão multiresposta
   output$mults <- renderUI({
     dados <- dados(input)$dados
     nomes <- names(mults(dados))
@@ -138,6 +142,7 @@ server <- function(input, output, session){
 
   })
 
+  # função para a seleção do item da questão multiresposta 2
   output$mults2 <- renderUI({
     dados <- dados(input)$dados
     nomes <- names(mults(dados))
@@ -155,10 +160,29 @@ server <- function(input, output, session){
     
   })
   
+  # função para a seleção do tipo de gráfico bidimensional
+  output$TipoGrafico2 <- renderUI({
+    dados <- dados(input)$dados
+    nomes <- names(mults(dados))
+    
+    if( any(nomes == input$var_grafico2_1) | any(nomes == input$var_grafico2_2) )
+      tipo <- c("Colunas","Barras", "Setores")
+    else
+      tipo <- c("Colunas Superpostas Prop.","Colunas Superpostas","Colunas Sobrepostas",
+                "Barras Superpostas Prop.", "Barras Superpostas", "Barras Sobrepostas",
+                "Linhas")
+    
+    selectInput(inputId = "tipo2", label = "Tipo de gráfico:",
+                choices = tipo,
+                selected = tipo[3]
+    )
+    
+  })
+  
     
   #------------------------------------------------------------------------------#
   #------------------------------------------------------------------------------# 
-  # função para a seleção da variavel para a tabela
+  # função para a seleção da variavel para o gráfico
   output$vargrafico <- renderUI({
     dados <- dados(input)
     nomes <- as.matrix(colnames(dados$dados))
@@ -189,17 +213,55 @@ server <- function(input, output, session){
     as.matrix(dados$dados[,input$show_vars, drop = FALSE])
   }, options = list(pageLength = 10))
   #------------------------------------------------------------------------------#
+  
+  mytable <- reactive({
+    dados <- dados(input)
+    
+    #      n <- which(colnames(dados$dados) ==  input$var_tabela)
+    Resultado <- Gerar_freq(dados$dados)
+    return(Resultado[[req(input$var_tabela)]])
+  })
+  
+  
   #------------------------------------------------------------------------------#
   # Tabela
   output$Tabela <- renderDataTable({
-    dados <- dados(input)
-    
-#      n <- which(colnames(dados$dados) ==  input$var_tabela)
-    Resultado <- Gerar_freq(dados$dados)
-    Resultado[[req(input$var_tabela)]]
-
+    mytable()
   })
-  #------------------------------------------------------------------------------#
+  
+  # função para download da Tabela em .csv
+  output$downloadData <- downloadHandler(
+    filename = "Tabela freq.csv",
+    content = function(file) {
+      write.table(mytable(), file, row.names = FALSE, sep = ";", dec = ",")
+    }
+  )
+  
+  output$downloadAll <-  downloadHandler(
+    filename = function() {
+      paste('Frequencias', sep = '.', switch(
+        input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
+      ))
+    },
+    
+    content = function(file) {
+      src <- normalizePath('04-export_document.Rmd')
+#      src2 <- normalizePath('Edvandercommultiplasrespostas2.csv')
+      # temporarily switch to the temp dir, in case you do not have write
+      # permission to the current working directory
+      owd <- setwd(tempdir())
+      on.exit(setwd(owd))
+      file.copy(src, '04-export_document2.Rmd')
+#      file.copy(src, 'Edvandercommultiplasrespostas2')
+      
+      library(rmarkdown)
+      out <- render('04-export_document2.Rmd', switch(
+        input$format,
+        PDF = pdf_document(), HTML = html_document(), Word = word_document()
+      ))
+      file.rename(out, file)
+    }
+  )
   
   #------------------------------------------------------------------------------#
   # Grafico
@@ -208,7 +270,8 @@ server <- function(input, output, session){
     dados0 <- dados(input)
     dados <- Gerar_freq(dados0$dados)
     dados <- dados[[ req(input$var_grafico) ]]
-    dados <- dados[-nrow(dados),]
+
+    if( any(dados[,1] == "Total") ) dados <- dados[-nrow(dados),]
     
     X <- dados[,1]
     Frequencia <- dados[,2]
@@ -226,7 +289,7 @@ server <- function(input, output, session){
     )
     
     BASE <- ggplot(na.omit(dados), aes(x = X, y = Frequencia, fill = X ))
-    BASEpie <- ggplot(na.omit(dados), aes(x = "", y = Frequencia, fill = X ))
+#    BASEpie <- ggplot(na.omit(dados), aes(x = "", y = Frequencia, fill = X ))
     Colunas <- BASE + geom_bar(stat = "identity", colour = "lightgreen")
 #    Pizza <- BASEpie + geom_bar(width = 1,stat = "identity") + coord_polar(theta = "y", start = 0)
     Pizza <- plot_ly(dados, labels = X, values = Frequencia, type = "pie") %>%
@@ -235,12 +298,12 @@ server <- function(input, output, session){
     
     if(input$tipo == "Colunas") result <- Colunas + Titulo + Eixo_x + Eixo_y + 
       Config + scale_x_discrete( breaks = c("") )
-    if(input$tipo == "Pizza") result <- Pizza
+    if(input$tipo == "Setores") result <- Pizza
     if(input$tipo == "Barras") result <- Colunas + coord_flip() + xlab("") + Eixo_y +
       guides(fill=FALSE) + Config + 
       scale_x_discrete( breaks = c("") ) + Titulo
     
-    if(input$tipo == "Pizza") result else ggplotly(result)
+    if(input$tipo == "Setores") result else ggplotly(result)
 
   })
   
@@ -288,6 +351,8 @@ server <- function(input, output, session){
       if(aux2 == 1) dados_aux <- subset(dados_aux, Y == 1)
       
       if(aux3 == 1){
+        req(input$var_mults)
+        req(input$var_mults2)
         tab_freq <- count(dados_aux)
         tab_freq[,1] <- "Frequência"
         aux4 <- 1
@@ -295,18 +360,24 @@ server <- function(input, output, session){
         aux4 <- which(c(aux1,aux2) == 0)
         tab_freq <- count(dados_aux)
       }
-      
+
+      BASE <- ggplot( tab_freq, aes(x = tab_freq[,aux4], y = freq, fill = tab_freq[,aux4] ))+
+        guides(fill=guide_legend(title=NULL))
+      Colunas <- BASE + geom_bar(stat = "identity", colour = "lightgreen")
       Pizza <- plot_ly( tab_freq, labels = tab_freq[,aux4], values = freq, type = "pie") %>%
-        layout(title = input$text_titulo2)
+         layout(title = input$text_titulo2)
       
-      Pizza
+      if(input$tipo2 == "Colunas") result <- Colunas + Titulo + Eixo_x + Eixo_y + 
+        Config + scale_x_discrete( breaks = c("") )
+      if(input$tipo2 == "Setores") result <- Pizza
+      if(input$tipo2 == "Barras") result <- Colunas + coord_flip() + xlab("") + Eixo_y +
+        guides(fill=FALSE) + Config + 
+        scale_x_discrete( breaks = c("") ) + Titulo
+      
+      if(input$tipo2 == "Setores") result else ggplotly(result)
       
     }else{
 
-      # dadosx <- Gerar_matriz_binaria( 
-      #   dados[, which( colnames(dados) == req(input$var_grafico2_1) ) ] )$Matriz
-      # dadosy <- Gerar_matriz_binaria( 
-      #   dados[, which( colnames(dados) == req(input$var_grafico2_2) ) ] )$Matriz
       dadosx <- Gerar_matriz_binaria( dados[[req(input$var_grafico2_1)]] )$Matriz
       dadosy <- Gerar_matriz_binaria( dados[[req(input$var_grafico2_2)]] )$Matriz
       
@@ -317,19 +388,20 @@ server <- function(input, output, session){
       
       BASE <- ggplot(dados_aux, aes( x = X, fill = Y))
       
-      Colunas <- BASE + geom_bar( position = "fill", colour = "lightgreen") 
+      Colunas <- BASE + geom_bar( aes(y = ..count../sum(..count..)) , position = "fill", colour = "lightgreen") 
       Colunas2 <- BASE + geom_bar( position = "stack", colour = "lightgreen") 
       Colunas3 <- BASE + geom_bar( position = "dodge", colour = "lightgreen")      
       
-      if(input$tipo2 == "Colunas")  result <- Colunas + Config + Titulo +
+      req(input$tipo2)
+      if(input$tipo2 == "Colunas Superpostas Prop.")  result <- Colunas + Config + Titulo +
         Eixo_x  + ylab("Frequência relativa")
-      if(input$tipo2 == "Colunas2")  result <- Colunas2 + Config + Titulo + Eixo_x + Eixo_y
-      if(input$tipo2 == "Colunas3")  result <- Colunas3 + Config + Titulo + Eixo_x + Eixo_y
-      if(input$tipo2 == "Barras") result <- Colunas + coord_flip() + xlab("") +
+      if(input$tipo2 == "Colunas Superpostas")  result <- Colunas2 + Config + Titulo + Eixo_x + Eixo_y
+      if(input$tipo2 == "Colunas Sobrepostas")  result <- Colunas3 + Config + Titulo + Eixo_x + Eixo_y
+      if(input$tipo2 == "Barras Superpostas Prop.") result <- Colunas + coord_flip() + xlab("") +
         ylab("Frequência relativa") + Config
-      if(input$tipo2 == "Barras2") result <- Colunas2 + coord_flip() + xlab("") +
+      if(input$tipo2 == "Barras Superpostas") result <- Colunas2 + coord_flip() + xlab("") +
         Eixo_y + Config
-      if(input$tipo2 == "Barras3") result <- Colunas3 + coord_flip() + xlab("") +
+      if(input$tipo2 == "Barras Sobrepostas") result <- Colunas3 + coord_flip() + xlab("") +
         Eixo_y + Config
       
       if(input$tipo2 == "Linhas"){

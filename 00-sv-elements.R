@@ -81,75 +81,75 @@ Gerar_matriz_binaria <- function(x) {
 #------------------------------------------------------------------------------#
 # criando uma matriz Geral para todas as variaveis
 
-Gerar_Matriz_Ajustada <- function(dados, salvar = FALSE) {
-  
-  
-  # criando uma matriz Geral para todas as vari?veis
-  
-  j <- 1
-  #  multitem <- Gerar_matriz_binaria(dados[, 1], j)$Multitem
-  #  nlevel <- Gerar_matriz_binaria(dados[, 1], j)$N
-  matriz <- Gerar_matriz_binaria(dados[, 1], j, dados)$Matriz    # primeiro ? feita a primeira coluna
-  lista <- list(matriz)                                   # lista para conter a matriz das questões separadas
-  for (i in 2:ncol(dados)) {                # depois as demais colunas, pois uso o cbind para criar a matriz final
-    #    multitem <- c(multitem, Gerar_matriz_binaria(dados[, i], j)$Multitem)
-    #    nlevel <- c(nlevel, Gerar_matriz_binaria(dados[, i], j)$N)
-    j <- j + 1
-    matrizi <- Gerar_matriz_binaria(dados[, i], j, dados)$Matriz
-    lista <- c(lista, list(matrizi))
-    matriz <- cbind(matriz, matrizi)
-    
-  }
-  
-  names(lista) <- colnames(dados)       # nomeando os elementos da lista
-  
-  # ncolunas_var <- nlevel
-  # if(all(multitem == 0)) ncolunas_var <- rep(1, length(nlevel)) else ncolunas_var[which(multitem == 0)] <- 1
-  
-  # preparando a sa?da em xls
-  Resultado <- cbind(matriz, rep("", nrow(dados)), c(paste0("V", 1:ncol(dados)), rep("", (nrow(dados) - ncol(dados)))), 
-                     c(colnames(dados), rep("",(nrow(dados) - ncol(dados)))))
-  # salvando em xls
-  if(salvar == TRUE){
-    write.table(Resultado, file = "./Matrix_Ajustada.csv", sep = ";",row.names = FALSE, col.names = TRUE)
-  }
-  
-  # frequ?ncia e percentual
-  freq_aux <- function(x){
-    if(is.numeric(x)){
-      soma <- as.numeric( colSums(x, na.rm = TRUE) )
-      somaperc <- as.numeric( colSums( x, na.rm = TRUE) / nrow(dados)*100 )
-      somapercvalid <- as.numeric( colSums( x, na.rm = TRUE) / nrow(na.exclude(x))*100 )
-      aux <- data.frame(c(colnames(x),"TOTAL"), c(soma, sum(soma)) ,
-                        c(somaperc, round(sum(colSums( x, na.rm = TRUE) / nrow(dados)*100),1) ),
-                        c( somapercvalid, round(sum(colSums( x, na.rm = TRUE) / nrow(na.exclude(x))*100),1) ) )
-      colnames(aux) <- c("Opções","Frequência","%","% Válido")
-      #rownames(aux) <- NULL
-    }else{
-      soma <- as.numeric(table(x))
-      somaperc <- as.numeric( table(x) / nrow( dados )*100)
-      somapercvalid <- as.numeric( table(x) / nrow( na.exclude(x) )*100)
-      aux <- data.frame(c( names(table(x) ),"TOTAL"), c( soma, sum( soma ) ) , 
-                        c( somaperc, round( sum(somaperc),1) ), c( somapercvalid, round( sum(somapercvalid),1) ) )
-      colnames(aux) <- c("Opções","Frequência","%","% Válido")
-      #rownames(aux) <- NULL
-    }
-    #aux <- rbind(aux,c("TOTAL",sum(aux[,2]),sum(aux[,3])))
-    return(aux)
-  }
-  frequencia <- lapply(lista, freq_aux)
-  frequencia2 <- lapply(seq(frequencia),
-                        function(i) {
-                          y <- data.frame(frequencia[[i]])
-                          names(y) <- c(names(frequencia)[i], "Frequência","%")
-                          return(y)
-                        }
-  )
-  names(frequencia2) <- names(frequencia)
-  
-  
-  list(Matriz = matriz,  Lista = lista)
-}
+# Gerar_Matriz_Ajustada <- function(dados, salvar = FALSE) {
+#   
+#   
+#   # criando uma matriz Geral para todas as vari?veis
+#   
+#   j <- 1
+#   #  multitem <- Gerar_matriz_binaria(dados[, 1], j)$Multitem
+#   #  nlevel <- Gerar_matriz_binaria(dados[, 1], j)$N
+#   matriz <- Gerar_matriz_binaria(dados[, 1], j, dados)$Matriz    # primeiro ? feita a primeira coluna
+#   lista <- list(matriz)                                   # lista para conter a matriz das questões separadas
+#   for (i in 2:ncol(dados)) {                # depois as demais colunas, pois uso o cbind para criar a matriz final
+#     #    multitem <- c(multitem, Gerar_matriz_binaria(dados[, i], j)$Multitem)
+#     #    nlevel <- c(nlevel, Gerar_matriz_binaria(dados[, i], j)$N)
+#     j <- j + 1
+#     matrizi <- Gerar_matriz_binaria(dados[, i], j, dados)$Matriz
+#     lista <- c(lista, list(matrizi))
+#     matriz <- cbind(matriz, matrizi)
+#     
+#   }
+#   
+#   names(lista) <- colnames(dados)       # nomeando os elementos da lista
+#   
+#   # ncolunas_var <- nlevel
+#   # if(all(multitem == 0)) ncolunas_var <- rep(1, length(nlevel)) else ncolunas_var[which(multitem == 0)] <- 1
+#   
+#   # preparando a sa?da em xls
+#   Resultado <- cbind(matriz, rep("", nrow(dados)), c(paste0("V", 1:ncol(dados)), rep("", (nrow(dados) - ncol(dados)))), 
+#                      c(colnames(dados), rep("",(nrow(dados) - ncol(dados)))))
+#   # salvando em xls
+#   if(salvar == TRUE){
+#     write.table(Resultado, file = "./Matrix_Ajustada.csv", sep = ";",row.names = FALSE, col.names = TRUE)
+#   }
+#   
+#   # frequ?ncia e percentual
+#   freq_aux <- function(x){
+#     if(is.numeric(x)){
+#       soma <- as.numeric( colSums(x, na.rm = TRUE) )
+#       somaperc <- as.numeric( colSums( x, na.rm = TRUE) / nrow(dados)*100 )
+#       somapercvalid <- as.numeric( colSums( x, na.rm = TRUE) / nrow(na.exclude(x))*100 )
+#       aux <- data.frame(c(colnames(x),"TOTAL"), c(soma, sum(soma)) ,
+#                         c(somaperc, round(sum(colSums( x, na.rm = TRUE) / nrow(dados)*100),1) ),
+#                         c( somapercvalid, round(sum(colSums( x, na.rm = TRUE) / nrow(na.exclude(x))*100),1) ) )
+#       colnames(aux) <- c("Opções","Frequência","%","% Válido")
+#       #rownames(aux) <- NULL
+#     }else{
+#       soma <- as.numeric(table(x))
+#       somaperc <- as.numeric( table(x) / nrow( dados )*100)
+#       somapercvalid <- as.numeric( table(x) / nrow( na.exclude(x) )*100)
+#       aux <- data.frame(c( names(table(x) ),"TOTAL"), c( soma, sum( soma ) ) , 
+#                         c( somaperc, round( sum(somaperc),1) ), c( somapercvalid, round( sum(somapercvalid),1) ) )
+#       colnames(aux) <- c("Opções","Frequência","%","% Válido")
+#       #rownames(aux) <- NULL
+#     }
+#     #aux <- rbind(aux,c("TOTAL",sum(aux[,2]),sum(aux[,3])))
+#     return(aux)
+#   }
+#   frequencia <- lapply(lista, freq_aux)
+#   frequencia2 <- lapply(seq(frequencia),
+#                         function(i) {
+#                           y <- data.frame(frequencia[[i]])
+#                           names(y) <- c(names(frequencia)[i], "Frequência","%")
+#                           return(y)
+#                         }
+#   )
+#   names(frequencia2) <- names(frequencia)
+#   
+#   
+#   list(Matriz = matriz,  Lista = lista)
+# }
 
 #------------------------------------------------------------------------------#
 
@@ -178,22 +178,30 @@ Gerar_freq <- function(dados) {
   }
   resumo <- apply(dados, 2, f)
   
-  
   # verificando a frequência de cada uma das colunas ('Questões')
   
   freq_aux <- function(x){
     frequencia_absoluta <- as.numeric(table(x))
     
     frequencia_relativa <- as.numeric( table(x) / nrow( dados )*100)
-    
-    #freq <- cbind(names(table(x)), as.numeric(frequencia_absoluta), as.numeric(frequencia_relativa))
     somapercvalid <- as.numeric( table(x) / length( na.exclude(x) )*100)
-    freq1 <- data.frame(c(names(table(x)),"TOTAL"), c(frequencia_absoluta,sum(frequencia_absoluta) ),
-                        c(round(frequencia_relativa,1), round(sum( frequencia_relativa ),1) ),
-                        c(round(somapercvalid,1), round( sum(somapercvalid),1) )  )
     
-    colnames(freq1) <- c("Opções", "Frequência", "%", "% Válido")
-    #rownames(freq1) <- NULL
+    
+    if(length(x) > nrow(dados) ){ # condição para verificar se é multresposta
+                                  # e colocar o Total só nas que não são.
+      freq1 <- data.frame(c( names( table(x) )), c( frequencia_absoluta),
+                          c( round( frequencia_relativa,1) ),
+                          c( round( somapercvalid,1) )  )
+      
+      colnames(freq1) <- c( "Opções", "Frequência", "%", "% Válido")
+    }else{
+      freq1 <- data.frame(c(names(table(x)),"Total"), c(frequencia_absoluta,sum(frequencia_absoluta) ),
+                          c(round(frequencia_relativa,1), round(sum( frequencia_relativa ),1) ),
+                          c(round(somapercvalid,1), round( sum(somapercvalid),1) )  )
+      
+      colnames(freq1) <- c("Opções", "Frequência", "%", "% Válido")
+    }
+      #rownames(freq1) <- NULL
     return(freq1)
   }
   
@@ -225,6 +233,7 @@ mults <- function(dados){
   return( which(questmult == 1) )
 }
 
+# função para saber os itens das questões multiresposta
 itensmults <- function(x){
   separacao <- strsplit(as.character(x), ",")     #separa as respostas de cada um pela vírgula, gera uma lista p/ cada respondente
   separacao <- lapply(separacao, function(x) {    # Faz uma correção em uma questão específica que continha um item com ","
