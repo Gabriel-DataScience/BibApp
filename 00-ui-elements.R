@@ -47,6 +47,10 @@ inserirEixo2 <-
 DownloadTabela <-
   downloadButton('downloadData', 'Download arquivo .csv')
 
+format_arquivo_Tabela <- 
+  radioButtons('format_Tabela', 'Formato do documento', c('PDF', 'HTML', 'Word','.CSV'),
+               inline = TRUE, selected = '.CSV')
+
 DownloadAll <- 
   downloadButton("downloadAll","Download de todas as tabelas!")
 

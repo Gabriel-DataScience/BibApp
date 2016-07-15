@@ -4,6 +4,7 @@
 source("00-pack.R", encoding = "UTF-8")
 source("00-ui-elements.R", encoding = "UTF-8")
 source("00-sv-elements.R", encoding = "UTF-8")
+aux <- 0
 
 ui <-
   dashboardPage( skin = "green",
@@ -40,16 +41,31 @@ ui <-
                 )
         ),
         tabItem(tabName = "Tabela",
-                sidebarLayout(
-                  box( title = "Variável", solidHeader = TRUE, status = "success",
-                       uiOutput("vartabela"),
-                       DownloadTabela,
-                       DownloadAll,
-                       format_arquivo_all
-                  ),
-                  mainPanel(dataTableOutput("Tabela"))
-                  
-                )
+#                 sidebarLayout(
+#                   box( title = "Variável", solidHeader = TRUE, status = "success",
+#                        uiOutput("vartabela"),
+#                        DownloadTabela,
+#                        DownloadAll,
+#                        format_arquivo_all
+#                   ),
+#                   mainPanel(dataTableOutput("Tabela"))
+#                   
+#                 )
+fluidRow(
+
+    box( title = "Variável", solidHeader = TRUE, status = "success",
+         uiOutput("vartabela"),
+         DownloadTabela,
+         format_arquivo_Tabela
+    ),
+    box(title = "Variável", solidHeader = TRUE, status = "success",
+        DownloadAll,
+        format_arquivo_all
+    )
+  ,
+  mainPanel(dataTableOutput("Tabela"))
+  
+)
           
         ),
         tabItem(tabName = "Grafico",
@@ -103,6 +119,7 @@ ui <-
 
 
 server <- function(input, output, session){
+
   #dados <- dados(input)
  # Resultado <- Gerar_Matriz_Ajustada(dados,salvar = FALSE)
   #------------------------------------------------------------------------------# 
@@ -216,12 +233,9 @@ server <- function(input, output, session){
   
   mytable <- reactive({
     dados <- dados(input)
-    
-    #      n <- which(colnames(dados$dados) ==  input$var_tabela)
     Resultado <- Gerar_freq(dados$dados)
     return(Resultado[[req(input$var_tabela)]])
   })
-  
   
   #------------------------------------------------------------------------------#
   # Tabela
@@ -231,9 +245,32 @@ server <- function(input, output, session){
   
   # função para download da Tabela em .csv
   output$downloadData <- downloadHandler(
-    filename = "Tabela freq.csv",
+    
+    filename = function(){
+      if(req(input$format_Tabela) == ".CSV")
+        "Tabela freq.csv"
+      else
+        paste('Tabela freq', sep = '.', switch(
+          input$format_Tabela, PDF = 'pdf', HTML = 'html', Word = 'docx'
+        )) 
+    },
     content = function(file) {
-      write.table(mytable(), file, row.names = FALSE, sep = ";", dec = ",")
+      if(req(input$format_Tabela) == ".CSV")
+        write.table(mytable(), file, row.names = FALSE, sep = ";", dec = ",")
+      else{
+        aux <- "uma variavel"
+        src <- normalizePath('04-export_document.Rmd')
+        owd <- setwd(tempdir())
+        on.exit(setwd(owd))
+        file.copy(src, '04-export_document17.Rmd')
+        
+        out <- render('04-export_document17.Rmd', switch(
+          input$format_Tabela,
+          PDF = pdf_document(), HTML = html_document(), Word = word_document()
+        ))
+        file.rename(out, file)
+      }
+        
     }
   )
   
@@ -245,16 +282,15 @@ server <- function(input, output, session){
     },
     
     content = function(file) {
+      aux <- "todas variaveis"
+      
       src <- normalizePath('04-export_document.Rmd')
-#      src2 <- normalizePath('Edvandercommultiplasrespostas2.csv')
       # temporarily switch to the temp dir, in case you do not have write
       # permission to the current working directory
       owd <- setwd(tempdir())
       on.exit(setwd(owd))
       file.copy(src, '04-export_document2.Rmd')
-#      file.copy(src, 'Edvandercommultiplasrespostas2')
       
-      library(rmarkdown)
       out <- render('04-export_document2.Rmd', switch(
         input$format,
         PDF = pdf_document(), HTML = html_document(), Word = word_document()

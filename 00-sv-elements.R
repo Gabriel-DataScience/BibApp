@@ -205,6 +205,8 @@ Gerar_freq <- function(dados) {
     return(freq1)
   }
   
+  if(aux == "uma variavel") frequencia <- lapply(list(resumo), freq_aux)
+  else
   frequencia <- lapply(resumo, freq_aux)
 
 }

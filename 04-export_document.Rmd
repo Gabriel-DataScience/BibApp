@@ -10,31 +10,80 @@ output: pdf_document
 
 ```{r , echo = FALSE, message = FALSE, warning=FALSE}
 
-##################################################################################################
+if(aux == "uma variavel"){
+  Gerar_freq <- function(dados) {
+  # Função que retorna uma lista com todas as observações já separadas,
+  # individualmente para cada coluna do banco de dados a qual essa é
+  # aplicada
+  f <- function(x) {
+    separacao <- unlist(strsplit(as.character(x), ","))  # separa os itens separado por ,
+    retirar_espaco <- str_trim(separacao, side = "left")  # retira os espaços da frente
+    # transforma em NA os campos vazios
+    retirar_espaco <- ifelse( nchar(gsub(" ","",retirar_espaco))==0, NA,retirar_espaco)
+    
+    # corrigindo a opçao que tem virgula no meio da palavra
+    retirar_espaco[which(retirar_espaco == "Treinamentos de usuários (normalização" | 
+      retirar_espaco == " Treinamentos de usuários (normalização")] <- 
+      c("Treinamentos de usuários (normalização, bases de dados etc.)")
+    retirar_espaco[which(retirar_espaco == "bases de dados etc.)" | 
+                           retirar_espaco == " bases de dados etc.)")] <- NA
+    retirar_espaco <- na.exclude(retirar_espaco)
+    return(retirar_espaco)
+    
+  }
+  resumo <- apply(dados, 2, f)
+  
+  # verificando a frequência de cada uma das colunas ('Questões')
+  
+  freq_aux <- function(x){
+    frequencia_absoluta <- as.numeric(table(x))
+    
+    frequencia_relativa <- as.numeric( table(x) / nrow( dados )*100)
+    somapercvalid <- as.numeric( table(x) / length( na.exclude(x) )*100)
+    
+    
+    if(length(x) > nrow(dados) ){ # condição para verificar se é multresposta
+                                  # e colocar o Total só nas que não são.
+      freq1 <- data.frame(c( names( table(x) )), c( frequencia_absoluta),
+                          c( round( frequencia_relativa,1) ),
+                          c( round( somapercvalid,1) )  )
+      
+      colnames(freq1) <- c( "Opções", "Frequência", "%", "% Válido")
+    }else{
+      freq1 <- data.frame(c(names(table(x)),"Total"), c(frequencia_absoluta,sum(frequencia_absoluta) ),
+                          c(round(frequencia_relativa,1), round(sum( frequencia_relativa ),1) ),
+                          c(round(somapercvalid,1), round( sum(somapercvalid),1) )  )
+      
+      colnames(freq1) <- c("Opções", "Frequência", "%", "% Válido")
+    }
+      #rownames(freq1) <- NULL
+    return(freq1)
+  }
+  
+  if(aux == "uma variavel") frequencia <- lapply(list(resumo), freq_aux)
+  else
+  frequencia <- lapply(resumo, freq_aux)
 
-# endereco <- file.choose()
-# dados <- read.csv("Edvandercommultiplasrespostas2.csv", header = FALSE, 
-#                   row.names = 1, sep = ";", dec = ".",
-#                   encoding = "UTF-8")  # ler o arquivo
-dados <- dados(input)$dados
-# Questões abertas:
-# 17, 27, 35, 40, 46, 52, 62, 65.
-dados <- dados[, -c( 18, 28, 36, 41, 47, 53, 63, 66)]
+}
+  dados <- as.matrix( dados(input)$dados[[ input$var_tabela ]] )
+  colnames(dados) <- c(input$var_tabela)
+  Resultado <- Gerar_freq(dados)
+  Nome_var <- input$var_tabela
+  kable(Resultado, caption = Nome_var, row.names = FALSE, align = 'c' )
 
-# # nome das colunas
-# for(i in 1: ncol(dados)){
-#   colnames(dados)[i] <- as.character(dados[1,i])
-# }
-# dados <- dados[-1,]
+}else{
+  
+  dados <- dados(input)$dados
+  # Questões abertas:
+  # 17, 27, 35, 40, 46, 52, 62, 65.
+  dados <- dados[, -c( 18, 28, 36, 41, 47, 53, 63, 66)]
+  
+  Resultado <- Gerar_freq(dados)
+  Nome_var <- names(Resultado)
+  for(i in 1:length(Nome_var))
+  print(kable(Resultado[[i]], caption = paste( Nome_var[i]), row.names = FALSE ))
+  
+}
 
-Resultado <- Gerar_freq(dados)
-
-```
-
-
-```{r results="asis", echo=FALSE, message=FALSE, warning=FALSE}
-Nome_var <- names(Resultado)
-for(i in 1:length(Nome_var))
-print(kable(Resultado[[i]], caption = paste( Nome_var[i]), row.names = FALSE ))
 ```
 
