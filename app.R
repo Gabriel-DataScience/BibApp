@@ -4,7 +4,7 @@
 source("00-pack.R", encoding = "UTF-8")
 source("00-ui-elements.R", encoding = "UTF-8")
 source("00-sv-elements.R", encoding = "UTF-8")
-aux <- 0
+
 
 ui <-
   dashboardPage( skin = "green",
@@ -289,9 +289,9 @@ server <- function(input, output, session){
       # permission to the current working directory
       owd <- setwd(tempdir())
       on.exit(setwd(owd))
-      file.copy(src, '04-export_document2.Rmd')
+      file.copy(src, '04-export_document1.Rmd')
       
-      out <- render('04-export_document2.Rmd', switch(
+      out <- render('04-export_document1.Rmd', switch(
         input$format,
         PDF = pdf_document(), HTML = html_document(), Word = word_document()
       ))

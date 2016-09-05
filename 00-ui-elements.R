@@ -8,8 +8,8 @@ CarregarDados <-   fileInput("arquivoescolhido", label = "Escolha o seu arquivo 
             ".csv"
   ))
 
-Header <- checkboxInput(inputId = "header", "Header", TRUE)
-Linha <- checkboxInput(inputId = "linha", "Linha", TRUE)
+Header <- checkboxInput(inputId = "header", "Possui cabeçalho", TRUE)
+Linha <- checkboxInput(inputId = "linha", "A primeira coluna é o número da linha", TRUE)
 
 Separador <- 
   radioButtons("sep", "Separador",
@@ -45,7 +45,7 @@ inserirEixo2 <-
   textInput("text_eixo2", label = "Eixo x", placeholder = "Digite o titulo do eixo x")
 
 DownloadTabela <-
-  downloadButton('downloadData', 'Download arquivo .csv')
+  downloadButton('downloadData', 'Download arquivo')
 
 format_arquivo_Tabela <- 
   radioButtons('format_Tabela', 'Formato do documento', c('PDF', 'HTML', 'Word','.CSV'),

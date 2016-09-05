@@ -8,10 +8,9 @@ output: pdf_document
 ---
 
 
-```{r , echo = FALSE, message = FALSE, warning=FALSE}
-
-if(aux == "uma variavel"){
-  Gerar_freq <- function(dados) {
+```{r , echo = FALSE, message = FALSE, warning=FALSE, results='asis'}
+# - \usepackage[brazil]{babel}
+Gerar_freq <- function(dados) {
   # Função que retorna uma lista com todas as observações já separadas,
   # individualmente para cada coluna do banco de dados a qual essa é
   # aplicada
@@ -65,14 +64,16 @@ if(aux == "uma variavel"){
   frequencia <- lapply(resumo, freq_aux)
 
 }
+if(aux == "uma variavel"){
+  require(knitr)
   dados <- as.matrix( dados(input)$dados[[ input$var_tabela ]] )
   colnames(dados) <- c(input$var_tabela)
   Resultado <- Gerar_freq(dados)
   Nome_var <- input$var_tabela
-  kable(Resultado, caption = Nome_var, row.names = FALSE, align = 'c' )
+  kable(Resultado, caption = Nome_var, row.names = FALSE )
 
 }else{
-  
+  require(knitr)
   dados <- dados(input)$dados
   # Questões abertas:
   # 17, 27, 35, 40, 46, 52, 62, 65.
@@ -82,7 +83,7 @@ if(aux == "uma variavel"){
   Nome_var <- names(Resultado)
   for(i in 1:length(Nome_var))
   print(kable(Resultado[[i]], caption = paste( Nome_var[i]), row.names = FALSE ))
-  
+
 }
 
 ```

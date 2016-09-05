@@ -1,4 +1,4 @@
-
+aux<-0
 #------------------------------------------------------------------------------#
 # função que retorna os dados e um auxiliar
 dados <- function(input){
