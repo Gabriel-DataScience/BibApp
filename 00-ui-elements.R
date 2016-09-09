@@ -8,17 +8,18 @@ CarregarDados <-   fileInput("arquivoescolhido", label = "Escolha o seu arquivo 
             ".csv"
   ))
 
-Header <- checkboxInput(inputId = "header", "Possui cabeçalho", TRUE)
-Linha <- checkboxInput(inputId = "linha", "A primeira coluna é o número da linha", TRUE)
+Inform <- strong("O arquivo possui")
+Header <- checkboxInput(inputId = "header", "Cabeçalho", TRUE )
+Linha <- checkboxInput(inputId = "linha", "Nome das linhas", FALSE)
 
 Separador <- 
-  radioButtons("sep", "Separador",
-               c( Virgula = ",", Ponto_e_Virgula = ";", Tab = "\t"),
+  radioButtons("sep", "Separador dos registros",
+               c( Vírgula = ",", "Ponto e vírgula" = ";", Tabulação = "\t"),
                ";")
 
 Decimal <-
-  radioButtons("dec", "Decimal",
-               c( Virgula = ",", ponto = "."),
+  radioButtons("dec", "Separador de decimal",
+               c( Vírgula = ",", Ponto = "."),
                ".")
 
 TipoGrafico <-
@@ -45,7 +46,7 @@ inserirEixo2 <-
   textInput("text_eixo2", label = "Eixo x", placeholder = "Digite o titulo do eixo x")
 
 DownloadTabela <-
-  downloadButton('downloadData', 'Download arquivo')
+  downloadButton('downloadData', 'Download arquivo .csv')
 
 format_arquivo_Tabela <- 
   radioButtons('format_Tabela', 'Formato do documento', c('PDF', 'HTML', 'Word','.CSV'),
@@ -90,4 +91,3 @@ UIvargrafico2_2 <- function(nomes)
               'Selecione a variável do eixo y:', 
               choices = nomes,
               selected = nomes[1])
-
