@@ -46,7 +46,7 @@ inserirEixo2 <-
   textInput("text_eixo2", label = "Eixo x", placeholder = "Digite o titulo do eixo x")
 
 DownloadTabela <-
-  downloadButton('downloadData', 'Download arquivo .csv')
+  downloadButton('downloadData', 'Download tabela')
 
 format_arquivo_Tabela <- 
   radioButtons('format_Tabela', 'Formato do documento', c('PDF', 'HTML', 'Word','.CSV'),

@@ -1,12 +1,21 @@
 ---
-title: "Sistema de Biblioteca - UFC"
-author: "Gabriel Fernandes Gomes"
+title: ""
+author: ""
 header-includes:
  - \usepackage{caption}
  - \usepackage[brazil]{babel}
 output: pdf_document
 ---
 
+## Relatório automático do sistema de bibliotecas da Universidade Federal do ceará
+
+*Laboratório de Estatística e Matemática Aplicada - Universidade Federal do Ceará, Pici, Bloco 910, Departamento de estatística e matemática aplicada (DEMA)*
+
+**Ronald Targino Nojosa**
+
+**Gabriel Fernandes Gomes**
+
+**Sílvia Maria de Freitas**
 
 ```{r , echo = FALSE, message = FALSE, warning=FALSE, results='asis'}
 # - \usepackage[brazil]{babel}

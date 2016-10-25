@@ -4,7 +4,7 @@
 source("00-pack.R", encoding = "UTF-8")
 source("00-ui-elements.R", encoding = "UTF-8")
 source("00-sv-elements.R", encoding = "UTF-8")
-
+source("03-ui_Tutor.R", encoding = "UTF-8")
 
 ui <-
   dashboardPage( skin = "green",
@@ -16,8 +16,8 @@ ui <-
         menuItem("Tutorial", tabName = "Tutorial", icon = icon("fa fa-book")),
         menuItem("Dados", tabName = "Dados", icon = icon("fa fa-usb")),
         menuItem("Tabela", tabName = "Tabela", icon = icon("fa fa-list-alt")),
-        menuItem("Gráfico Univariado", tabName = "Grafico", icon = icon("fa fa-list-alt")),
-        menuItem("Gráfico Bivariado", tabName = "Grafico2", icon = icon("fa fa-list-alt"))
+        menuItem("Gráfico Univariado", tabName = "Grafico", icon = icon("fa fa-pie-chart")),
+        menuItem("Gráfico Bivariado", tabName = "Grafico2", icon = icon("fa fa-bar-chart"))
       )
     ),
     
@@ -25,7 +25,15 @@ ui <-
       tabItems(
         tabItem(tabName = "Tutorial",
                 titlePanel("Tutorial para abrir o banco de dados"),
-                paste("  Esse é o Tutorial para abrir o banco de dados")
+                box(title = "", status = "danger", width = 15,
+                    solidHeader = FALSE,
+                    p("Laboratório de Estatística e Matemática Aplicada -
+                      Universidade Federal do Ceará, Pici, Bloco 910, 
+                      Departamento de estatística e matemática aplicada (DEMA)"),
+                    p(strong("Desenvolvedores:"),"Gabriel Fernandes Gomes, Dr.
+                      Ronald Targino Nojosa e Dra. Sílvia Maria de Freitas")
+                    ),
+                Tutorial
         ),
         tabItem(tabName = "Dados",
                 fluidRow(
