@@ -159,7 +159,7 @@ shinyUI(
                                       )
                                ),
                                column(8, 
-                                      box(width = NULL, status = "danger" ,plotlyOutput("grafico2"))
+                                      box(width = NULL, status = "danger" ,plotlyOutput("grafico2", height = "550px"))
                                )
                              )
                              
